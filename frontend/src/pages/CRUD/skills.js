@@ -1,123 +1,106 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Layout from "@/ui-components/layout";
-import React, { useState } from "react";
 
 const Skills = () => {
-  const [hoveredIndex, setHoveredIndex] = useState(Array(3).fill(null)); // Track hover state for each column
-  const [userSkills, setUserSkills] = useState([[], [], []]);
+  const [userSkills, setUserSkills] = useState([]); // Initialize state for skills fetched from the endpoint
+  const [editedSkill, setEditedSkill] = useState(""); // Track edited skill
+  const [isEditing, setIsEditing] = useState(false); // Track edit mode
 
-  const dummySkillsRows = [
-    ["Painting", "Singing", "Dance", "Programming"],
-    ["Cooking", "Writing", "Photography", "Graphic Design"],
-    ["Cooking", "Writing", "Photography", "Graphic Design"],
-  ];
+  useEffect(() => {
+    // Fetch skills from an API endpoint
+    const fetchSkills = async () => {
+      try {
+        const response = await axios.get("YOUR_ENDPOINT_URL_HERE");
+        if (response.status === 200) {
+          setUserSkills(response.data.skills); // Assuming the API response contains skills in an array named 'skills'
+        } else {
+          // Handle error if the request fails
+          console.error("Failed to fetch skills");
+        }
+      } catch (error) {
+        console.error("Error fetching skills:", error);
+      }
+    };
 
-  const handleMouseEnter = (rowIndex, index) => {
-    const newHoveredIndex = [...hoveredIndex];
-    newHoveredIndex[rowIndex] = index;
-    setHoveredIndex(newHoveredIndex);
-  };
+    // Call the fetchSkills function when the component mounts
+    fetchSkills();
+  }, []); // Empty dependency array ensures this runs only once on component mount
 
-  const handleMouseLeave = (rowIndex) => {
-    const newHoveredIndex = [...hoveredIndex];
-    newHoveredIndex[rowIndex] = null;
-    setHoveredIndex(newHoveredIndex);
-  };
-
-  const handleSkillChange = (rowIndex, index, event) => {
-    const inputValue = event?.target?.value || "";
-    const newSkills = [...userSkills];
-    if (!newSkills[rowIndex]) {
-      newSkills[rowIndex] = [];
+  const addSkill = () => {
+    if (editedSkill.trim() !== "") {
+      const newUserSkills = [...userSkills];
+      newUserSkills[0].unshift(editedSkill); // Add new skill to the first row
+      setUserSkills(newUserSkills);
+      setEditedSkill("");
     }
-    newSkills[rowIndex][index] = inputValue;
-    setUserSkills(newSkills);
   };
 
-  const addSkill = (rowIndex) => {
-    const newSkills = [...userSkills];
-    newSkills[rowIndex] = [...newSkills[rowIndex], ""];
-    setUserSkills(newSkills);
-  };
-
-  const deleteSkill = (rowIndex, index) => {
-    const newSkills = [...userSkills];
-    newSkills[rowIndex].splice(index, 1);
-    setUserSkills(newSkills);
-  };
-
-  const saveSkill = () => {
-    console.log("Skills saved:", userSkills);
-  };
-
-  const addSkillToAll = () => {
-    const newSkills = userSkills.map((row) => [...row, ""]);
-    setUserSkills(newSkills);
+  const updateSkill = (rowIndex, colIndex, newSkill) => {
+    const newUserSkills = [...userSkills];
+    newUserSkills[rowIndex][colIndex] = newSkill;
+    setUserSkills(newUserSkills);
   };
 
   return (
     <Layout>
       <div className="container" id="skills">
-        <h6 className="display-4 text-primary m-5 text-center">
+        <h5 className="display-4 text-primary m-5 text-center">
           Skills and Talents
-        </h6>
-        {userSkills.map((skillsRow, rowIndex) => (
-          <div className="row justify-content-center" key={rowIndex}>
-            {skillsRow.map((skill, index) => (
-              <div className="col-md-3 mb-4" key={index}>
-                <div
-                  className="card"
-                  onMouseEnter={() => handleMouseEnter(rowIndex, index)}
-                  onMouseLeave={() => handleMouseLeave(rowIndex)}
-                  style={{
-                    backgroundColor:
-                      hoveredIndex[rowIndex] === index ? "" : "#f0f0f0",
-                    transition: "background-color ease-in-out 0.3s",
-                  }}
-                >
-                  <div
-                    className="card-body text-center"
-                    style={{ fontSize: "16px" }}
-                  >
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={skill || ""}
-                      onChange={(event) =>
-                        handleSkillChange(rowIndex, index, event)
-                      }
-                    />
-                    <button
-                      className="btn btn-sm btn-success mt-2"
-                      onClick={saveSkill}
-                    >
-                      Update
-                    </button>
-                    <button
-                      className="btn btn-sm btn-danger mt-2 ml-2"
-                      onClick={() => deleteSkill(rowIndex, index)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+        </h5>
+        <div className="card shadow mb-4">
+          <div className="card-header py-3">
+            <h6 className="m-0 font-weight-bold text-primary">
+              Add your Skills and Talents below:
+            </h6>
           </div>
-        ))}
-        <div className="row justify-content-center">
-          <div className="col-md-3 mb-4">
-            <div className="input-group">
+          <div className="card-body">
+            <div className="mb-3">
               <input
                 type="text"
                 className="form-control"
-                placeholder="Add skills (comma-separated)"
-                onChange={(event) => handleSkillChange(0, 0, event)} // This will handle changes for the single input field
+                placeholder="Enter new skill"
+                value={editedSkill}
+                onChange={(e) => setEditedSkill(e.target.value)}
               />
+              <button className="btn btn-primary mt-2" onClick={addSkill}>
+                Add Skill
+              </button>
+            </div>
+            <table className="table">
+              <tbody>
+                {userSkills.map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {row.map((skill, colIndex) => (
+                      <td key={colIndex}>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={skill}
+                            onChange={(e) =>
+                              updateSkill(
+                                rowIndex,
+                                colIndex,
+                                e.target.value
+                              )
+                            }
+                          />
+                        ) : (
+                          skill
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="d-flex justify-content-start">
               <button
-                className="btn btn-primary"
-                onClick={addSkillToAll} // Clicking this button will add a skill to each row
+                className="btn btn-success"
+                onClick={() => setIsEditing(!isEditing)}
               >
-                Add
+                {isEditing ? "Save Changes" : "Edit Skills"}
               </button>
             </div>
           </div>
