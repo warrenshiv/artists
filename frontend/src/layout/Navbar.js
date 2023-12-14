@@ -20,12 +20,12 @@ const Navbar = () => {
               </Link>
             </li>
             <li>
-              <Link href="/featured">
+              <Link href="explore/featured">
                 <div className="nav-link scrollto active">Featured</div>
               </Link>
             </li>
             <li>
-              <Link href="/events">
+              <Link href="explore/events">
                 <div className="nav-link scrollto" href="#" target="_blank">
                   Upcoming Events
                 </div>

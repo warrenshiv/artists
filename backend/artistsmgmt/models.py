@@ -45,6 +45,12 @@ def create_user_artist(sender, instance, created, **kwargs):
         ArtistBio.objects.create(artist=instance, profession='default',
                                  expert_level='default', location='default', photo='default', description='default')
 
+        # Create a Skills instance for the created Artist with empty skills
+        Skills.objects.create(
+            artist=instance,
+            skills=''  # Initialize with an empty string
+        )
+
 
 # ArtistBio
 
@@ -64,6 +70,21 @@ class ArtistBio(models.Model):
 
     def __str__(self):
         return f"{self.artist.username}'s Bio"
+
+# Skills and Talents
+
+
+class Skills(models.Model):
+    artist = models.OneToOneField(
+        'artistsmgmt.Artist', on_delete=models.CASCADE)
+    skills = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name = 'Skills'
+        verbose_name_plural = 'Skills'
+
+    def __str__(self):
+        return f"{self.artist.username}'s Skills"
 
 
 # Portfolio

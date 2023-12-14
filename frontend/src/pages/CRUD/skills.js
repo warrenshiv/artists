@@ -1,38 +1,83 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { parseCookies } from "nookies";
 import Layout from "@/ui-components/layout";
 
 const Skills = () => {
-  const [userSkills, setUserSkills] = useState([]); // Initialize state for skills fetched from the endpoint
+  const [userSkills, setUserSkills] = useState([[]]); // Initialize with a single empty array\
   const [editedSkill, setEditedSkill] = useState(""); // Track edited skill
   const [isEditing, setIsEditing] = useState(false); // Track edit mode
 
   useEffect(() => {
-    // Fetch skills from an API endpoint
     const fetchSkills = async () => {
       try {
-        const response = await axios.get("YOUR_ENDPOINT_URL_HERE");
+        const cookies = parseCookies();
+        const token = cookies.token || "";
+
+        const response = await axios.get("http://127.0.0.1:8000/api/skills/", {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+
         if (response.status === 200) {
-          setUserSkills(response.data.skills); // Assuming the API response contains skills in an array named 'skills'
+          // Extracting only the "skills" property from each object in the response
+          const skillsArray = response.data.map((item) => item.skills);
+
+          setUserSkills([skillsArray]); // Setting the skills array within another array
         } else {
-          // Handle error if the request fails
           console.error("Failed to fetch skills");
+          setUserSkills([]); // Set an empty array in case of failure
         }
       } catch (error) {
         console.error("Error fetching skills:", error);
+        setUserSkills([]); // Set an empty array in case of error
       }
     };
 
-    // Call the fetchSkills function when the component mounts
     fetchSkills();
-  }, []); // Empty dependency array ensures this runs only once on component mount
+  }, []);
 
-  const addSkill = () => {
+  const addSkill = async () => {
     if (editedSkill.trim() !== "") {
-      const newUserSkills = [...userSkills];
-      newUserSkills[0].unshift(editedSkill); // Add new skill to the first row
-      setUserSkills(newUserSkills);
-      setEditedSkill("");
+      try {
+        const cookies = parseCookies();
+        const token = cookies.token || "";
+
+        const response = await axios.post(
+          "http://127.0.0.1:8000/api/skills/",
+          { skills: editedSkill },
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          }
+        );
+
+        if (response.status === 201) {
+          // Fetch skills after successfully adding a skill
+          const fetchResponse = await axios.get(
+            "http://127.0.0.1:8000/api/skills/",
+            {
+              headers: {
+                Authorization: `Token ${token}`,
+              },
+            }
+          );
+
+          if (fetchResponse.status === 200) {
+            const skillsArray = fetchResponse.data.map((item) => item.skills);
+            setUserSkills([skillsArray]);
+            setEditedSkill(""); // Clear the input field by resetting editedSkill to an empty string
+          } else {
+            console.error("Failed to fetch skills after adding skill");
+          }
+        } else {
+          console.error("Failed to add skill");
+        }
+      } catch (error) {
+        console.error("Error adding skill:", error);
+      }
     }
   };
 
@@ -79,11 +124,7 @@ const Skills = () => {
                             className="form-control"
                             value={skill}
                             onChange={(e) =>
-                              updateSkill(
-                                rowIndex,
-                                colIndex,
-                                e.target.value
-                              )
+                              updateSkill(rowIndex, colIndex, e.target.value)
                             }
                           />
                         ) : (

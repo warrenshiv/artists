@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from artistsmgmt.models import Artist, Portfolio, FeaturedArtists, UpcomingEvents, ArtistBio
+from artistsmgmt.models import Artist, Portfolio, FeaturedArtists, UpcomingEvents, ArtistBio, Skills
 from django.shortcuts import get_object_or_404
 
 
@@ -42,6 +42,7 @@ class ArtistSignUpSerializer(serializers.ModelSerializer):
         )
         return user
 
+
 class PortfolioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Portfolio
@@ -53,13 +54,14 @@ class PortfolioSerializer(serializers.ModelSerializer):
 
 class ArtistBioSerializer(serializers.ModelSerializer):
     artist_name = serializers.SerializerMethodField()
+
     class Meta:
         model = ArtistBio
         fields = '__all__'
         extra_kwargs = {
             'artist': {'read_only': True},
         }
-        
+
     def get_artist_name(self, obj):
         return f"{obj.artist.first_name} {obj.artist.last_name}"
 
@@ -76,7 +78,31 @@ class ArtistBioSerializer(serializers.ModelSerializer):
         return artist_bio
 
 
+# Skills and Talents
+
+class SkillsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skills
+        fields = '__all__'
+        extra_kwargs = {
+            'artist': {'read_only': True},
+        }
+        
+    def create(self, validated_data):
+        request = self.context.get('request')
+        user = request.user if request else None
+
+        # Fetch the associated Artist instance for the authenticated user based on username
+        artist_instance = get_object_or_404(Artist, username=user.username)
+
+        # Update or create the Skills instance associating it with the corresponding Artist
+        skills, created = Skills.objects.update_or_create(
+            artist=artist_instance,
+            defaults={'skills': validated_data['skills']}
+        )
+        return skills
 # Featured Artist
+
 
 class FeaturedArtistSerializer(serializers.ModelSerializer):
     selected_artist_name = serializers.SerializerMethodField()

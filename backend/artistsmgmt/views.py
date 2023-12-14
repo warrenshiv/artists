@@ -2,14 +2,14 @@
 from rest_framework import generics, status, permissions
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.response import Response
-from .serializers import ArtistSignUpSerializer, ArtistSerializer, PortfolioSerializer, FeaturedArtistSerializer, UpcomingEventsSerializer, ArtistBioSerializer
+from .serializers import ArtistSignUpSerializer, ArtistSerializer, PortfolioSerializer, FeaturedArtistSerializer, UpcomingEventsSerializer, ArtistBioSerializer, SkillsSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.views import APIView
 from .permissions import IsArtist
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Artist, Portfolio, FeaturedArtists, UpcomingEvents, ArtistBio
+from .models import Artist, Portfolio, FeaturedArtists, UpcomingEvents, ArtistBio, Skills
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, BasePermission
 from datetime import datetime, timedelta
 from django.http import Http404
@@ -219,6 +219,19 @@ class PublicArtistBioDetailView(generics.RetrieveAPIView):
             return artist_bio
         except ArtistBio.DoesNotExist:
             raise Http404("ArtistBio does not exist for this user")
+        
+        
+# Artist Skills and Talents
+
+class SkillsListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SkillsSerializer
+    
+    def get_queryset(self):
+        return Skills.objects.filter(artist=self.request.user)
+    
+    def perform_create(self, serializer):
+        serializer.save(artist=self.request.user)
 
 
 # TWilio SMS API

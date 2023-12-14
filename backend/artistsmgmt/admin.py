@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Artist, Portfolio, FeaturedArtists, UpcomingEvents, ArtistBio
+from .models import Artist, Portfolio, FeaturedArtists, UpcomingEvents, ArtistBio, Skills
 
 # Register your models here.
 # admin.site.register(User)
@@ -8,4 +8,5 @@ admin.site.register(Portfolio)
 admin.site.register(FeaturedArtists)
 admin.site.register(UpcomingEvents)
 admin.site.register(ArtistBio)
+admin.site.register(Skills)
 

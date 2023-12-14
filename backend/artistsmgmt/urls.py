@@ -2,7 +2,7 @@ from django.urls import path
 from .views import ArtistSignUpView, CustomAuthToken, LogoutView, ArtistOnlyView, ArtistCreateView, ArtistRetrieveUpdateDestroyView, ArtistUpdateView
 from .views import PortfolioListCreateAPIView, PortfolioDetailAPIView, FeaturedArtistsListCreateView, FeaturedArtistsDetailView, UpcomingEventsListAPIView
 from .views import ArtistBioListCreateAPIView, ArtistBioDetailAPIView
-from . views import send_sms, SendEmailView, PublicArtistBioDetailView
+from . views import send_sms, SendEmailView, PublicArtistBioDetailView, SkillsListCreateAPIView
 
 urlpatterns = [
 
@@ -43,6 +43,9 @@ urlpatterns = [
 
     path('artist-bio/<str:username>/',
          PublicArtistBioDetailView.as_view(), name='artist-bio-detail'),
+    
+    # Skills
+     path('skills/', SkillsListCreateAPIView.as_view(), name='skills-list-create'),
 
     # Twilio SMS API
     path('send-sms/', send_sms, name='send-sms'),

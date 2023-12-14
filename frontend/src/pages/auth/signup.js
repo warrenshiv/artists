@@ -30,7 +30,7 @@ const SignUpForm = () => {
       if (response.status === 200) {
         // Successful signup, handle token or session information here
         const data = response.data;
-        console.log(data);
+        // console.log(data);
         // Store token/session info securely (localStorage, cookies, etc.)
         setSuccessMessage("Registration successful!"); // Set success message
         setErrorMessage(""); // Clear any previous error message
@@ -47,8 +47,8 @@ const SignUpForm = () => {
           setSuccessMessage("");
         }, 2000);
 
-        // Redirect to a dashboard or profile page after successful login
-        Router.push("auth/login");
+        // Redirect to a login page after successful signup
+        Router.push("../auth/login");
       } else {
         // Handle error response
         console.error("Signup failed:", response.data);
